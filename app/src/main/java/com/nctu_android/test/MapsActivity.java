@@ -3,6 +3,7 @@ package com.nctu_android.test;
 import android.os.Vibrator;
 import android.app.Service;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import android.app.AlertDialog;
@@ -13,6 +14,9 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.location.Location;
 import android.location.LocationManager;
+import android.text.TextUtils;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ImageButton;
 import android.location.Criteria;
@@ -33,6 +37,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 
 
 import java.text.DecimalFormat;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
+
+
 
 //map的activity
 public class MapsActivity extends FragmentActivity {
@@ -44,6 +52,7 @@ public class MapsActivity extends FragmentActivity {
     private String best;
 
     ImageButton Bag;
+    Button Battle;
     SQLiteDatabase db;
     ArrayList<String> idlist;
     ArrayList<String> idlist2;
@@ -97,6 +106,12 @@ public class MapsActivity extends FragmentActivity {
         //bag button
         Bag = (ImageButton) findViewById(R.id.btnBag);
         Bag.setOnClickListener(btnBag);
+
+        //battle button
+        Battle = (Button) findViewById(R.id.btnBattle);
+        Battle.setOnClickListener(btnBattle);
+
+
 
     }
 
@@ -290,6 +305,52 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
+    //當點選battle圖示時的處理
+    OnClickListener btnBattle = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            //socket connect
+            mSocket.connect();
+            attemptSend();
+
+            idlist2 = BagDB.getIDList(db);
+            ArrayList<String> namelist = new ArrayList<String>();
+            //找出其對應的名字
+            for( String id:idlist2) {
+                namelist.add(MonsterDB.getName(db,id));
+            }
+
+            final String name[] = new String[ namelist.size() ];
+            namelist.toArray(name);
+
+            //選擇出戰怪物
+            new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
+                    .setSingleChoiceItems(
+                            name, 0,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Toast t = Toast.makeText(MapsActivity.this, "你選擇了"+name[which], Toast.LENGTH_SHORT);
+                                    t.show();
+
+                                    dialog.dismiss();
+
+                                    //使用intent將資訊傳給battle activity
+                                    Intent intent = new Intent();
+                                    intent.setClass(MapsActivity.this, Battle.class);
+                                    startActivity(intent);
+
+                                }
+                            })
+                    .setNegativeButton("逃跑", null).show();
+
+
+
+
+        }
+    };
+
+
     //捕捉與否的dialog
     public void dialog(final String MonsterId,String MonsterName){
         final String name = MonsterName;
@@ -333,5 +394,18 @@ public class MapsActivity extends FragmentActivity {
         myVibrator.vibrate(time);
     }
 
+    //socket
+    private Socket mSocket;
+    {
+        try {
+            mSocket = IO.socket("http://apppp.ngrok.io");
+        } catch (URISyntaxException e) {}
+    }
+
+    private void attemptSend() {
+        String message = "testtttttttttt";
+
+        mSocket.emit("new message", message);
+    }
 }
 

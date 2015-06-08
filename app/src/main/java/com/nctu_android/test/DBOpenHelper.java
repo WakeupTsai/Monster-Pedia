@@ -30,11 +30,12 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         cv1.put("Pet_id", "a001");
         db.insert(BAGTABLE, null, cv1);
 
-        cv1.put("Pet_id", "a004");
+        cv1.put("Pet_id", "a00４");
         db.insert(BAGTABLE, null, cv1);
 
         cv1.put("Pet_id", "a007");
         db.insert(BAGTABLE, null, cv1);
+
 
         //初始化POSITIONTABLE
         ContentValues cv = new ContentValues();
@@ -76,7 +77,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
         cv.put("Monster_id", "a007");
         cv.put("name", "傑尼龜");
-        cv.put("x", 24.786600);
+        cv.put("x", 24.786517);
         cv.put("y", 120.997858);
         db.insert(POSITIONTABLE, null, cv);
 
@@ -226,8 +227,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
         cv.put("Monster_id", "a032");
         cv.put("name", "超夢");
-        cv.put("x", 24.785236);
-        cv.put("y", 120.999167);
+        cv.put("x", 24.786517);//24 78630424.786367, 120.998589
+        cv.put("y", 120.998384);//120.997858 120,997820
         db.insert(POSITIONTABLE, null, cv);
 
         cv.put("Monster_id", "a033");

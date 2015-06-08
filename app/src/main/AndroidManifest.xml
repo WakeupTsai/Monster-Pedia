@@ -12,7 +12,7 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +24,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-        android:value="AIzaSyBH5ryQ2Jdeh20dDQYVpDtRb1a46WIhv60" />
+            android:value="AIzaSyC9mPZIs8bVNNmvbs3Ka5fnXIhC84GSrv8" />
 
         <activity
             android:name=".MapsActivity"
@@ -35,13 +35,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".BagActivity"
             android:label="@string/title_activity_bag" >
         </activity>
-
+        <activity
+            android:name=".Battle"
+            android:label="@string/title_activity_battle" >
+        </activity>
     </application>
-
 
 </manifest>

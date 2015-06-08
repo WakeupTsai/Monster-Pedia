@@ -17,6 +17,12 @@ android:orientation="vertical">
         android:layout_height="wrap_content"
         android:src="@drawable/bag"
         android:background="@android:color/transparent"/>
+    <Button
+        android:id="@+id/btnBattle"
+        android:layout_below="@+id/btnBag"
+        android:text="Battle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 
 </RelativeLayout>
