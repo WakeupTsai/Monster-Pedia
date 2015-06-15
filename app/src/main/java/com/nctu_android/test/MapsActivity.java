@@ -345,8 +345,6 @@ public class MapsActivity extends FragmentActivity {
                     .setNegativeButton("逃跑", null).show();
 
 
-
-
         }
     };
 
