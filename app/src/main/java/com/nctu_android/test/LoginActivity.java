@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -29,6 +30,9 @@ import java.util.List;
 
 public class LoginActivity extends Activity {
     private Button login;
+    private String result="0";
+    private String account;
+    private String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,45 +47,70 @@ public class LoginActivity extends Activity {
         @Override
         //username,password
         public void onClick(View v) {
-            EditText accountText = (EditText) findViewById(R.id.account);
-            String account = accountText.getText().toString();
 
-            EditText passwordText = (EditText) findViewById(R.id.account);
-            String password = passwordText.getText().toString();
+            //postData();
 
-            postData();
+            Thread thread = new Thread(){
+                public void run(){
 
-            Intent intent = new Intent();
-            intent.setClass(LoginActivity.this, MapsActivity.class);
-            startActivity(intent);
+                    result = postData();
+                }
+            };
+            thread.start();
+
+            //Toast t = Toast.makeText(LoginActivity.this, result, Toast.LENGTH_SHORT);
+            //t.show();
+
+            if (Integer.parseInt(result)==1) {
+                Toast t = Toast.makeText(LoginActivity.this, "log in", Toast.LENGTH_SHORT);
+                t.show();
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, MapsActivity.class);
+                startActivity(intent);
+            }
+            else {
+                Toast t = Toast.makeText(LoginActivity.this, "try again", Toast.LENGTH_SHORT);
+                t.show();
+            }
         }
     };
 
 
 
-    public void postData() {
+    public String postData() {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
         HttpPost httppost = new HttpPost("http://apppp.ngrok.io/api/user/login");
 
+
+
         try {
             // Add your data
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair("username", "12345"));
-            nameValuePairs.add(new BasicNameValuePair("password", "Hi"));
+            EditText accountText = (EditText) findViewById(R.id.account);
+            account = accountText.getText().toString();
+
+            EditText passwordText = (EditText) findViewById(R.id.password);
+            password = passwordText.getText().toString();
+
+            nameValuePairs.add(new BasicNameValuePair("username", account));
+            nameValuePairs.add(new BasicNameValuePair("password", password));
             httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             // Execute HTTP Post Request
             HttpResponse response = httpclient.execute(httppost);
+            String result = EntityUtils.toString(response.getEntity());
+            return result;
 
         } catch (ClientProtocolException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-
+            return "Fail";
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return "Fail";
         }
     }
 }
