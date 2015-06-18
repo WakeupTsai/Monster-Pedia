@@ -57,6 +57,7 @@ public class LoginActivity extends Activity {
                 }
             };
             thread.start();
+
             try {
                 thread.join();
 
