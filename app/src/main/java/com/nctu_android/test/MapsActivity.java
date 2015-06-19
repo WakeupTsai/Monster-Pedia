@@ -35,13 +35,14 @@ import com.google.android.gms.maps.model.CameraPosition;
 
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.emitter.Emitter;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +56,6 @@ public class MapsActivity extends FragmentActivity {
     private LocationManager mgr;
     private String best;
 
-    private ArrayList<String> playersId = new ArrayList<String>();
 
     ImageButton Bag;
     Button Battle;
@@ -63,8 +63,8 @@ public class MapsActivity extends FragmentActivity {
     SQLiteDatabase db;
     ArrayList<String> idlist;
     ArrayList<String> idlist2;
-    String receiveData = "";
     String userId;
+    Map<String, String> players = new HashMap<String, String>();
 
     private boolean isIn;
     ArrayList<String> poslist = new ArrayList<String>();
@@ -129,10 +129,13 @@ public class MapsActivity extends FragmentActivity {
         Logout.setOnClickListener(btnLogout);
 
         //get userid
-        mSocket.on("ackId", onNewMessage1);
+        mSocket.on("ackId", onAckId);
 
         //if new user in
-        mSocket.on("newUser", onNewMessage2);
+        mSocket.on("newUser", onNewUser);
+
+        //if user leave
+        mSocket.on("deleteUser", onDeleteUser);
 
     }
 
@@ -443,7 +446,7 @@ public class MapsActivity extends FragmentActivity {
     }
 
     //socker get
-    private Emitter.Listener onNewMessage1 = new Emitter.Listener() {
+    public Emitter.Listener onAckId = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -465,14 +468,13 @@ public class MapsActivity extends FragmentActivity {
                                 String id  = other.getString("id");
                                 String posx  = other.getString("posx");
                                 String posy  = other.getString("posx");
+                                players.put(id,"("+posx+","+posy+")");
                                 Log.d("DEBUG", id+","+posx+","+posy);
 
                             } catch (JSONException e) {
                                 // Something went wrong!
                             }
                         }
-
-
                     } catch (JSONException e) {
                         return;
                     }
@@ -483,7 +485,7 @@ public class MapsActivity extends FragmentActivity {
     };
 
     //socker get
-    private Emitter.Listener onNewMessage2 = new Emitter.Listener() {
+    public Emitter.Listener onNewUser = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -497,7 +499,13 @@ public class MapsActivity extends FragmentActivity {
                         String posx  = jo.getString("posx");
                         String posy  = jo.getString("posx");
 
+                        players.put(newId,"("+posx+","+posy+")");
                         Log.d("DEBUG", newId+","+posx+","+posy);
+
+                        for (Map.Entry<String, String> entry : players.entrySet())
+                        {
+                            Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
+                        }
 
                     } catch (JSONException e) {
                         return;
@@ -508,6 +516,21 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
+    //socker get
+    public Emitter.Listener onDeleteUser = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            String deleteId  = args[0].toString();
+            Log.d("DEBUG","delete user:"+deleteId);
+            players.remove(deleteId);
+
+            for (Map.Entry<String, String> entry : players.entrySet())
+            {
+                Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
+            }
+
+        }
+    };
 
 
 }
