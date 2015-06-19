@@ -298,6 +298,34 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
+    private void setPlayer() {
+        //將所有player以marker的方式標記在map上
+        mMap.clear();
+        setUpMap();
+
+        for (Map.Entry<String, String> entry : players.entrySet())
+        {
+            Log.d("DEBUG","Player in map!!!");
+
+            String pos = entry.getValue();
+            String name = entry.getKey();
+
+            if( !name.equals(userId) ) {
+
+                String[] tokens = pos.split(",");
+                String x = tokens[0];
+                String y = tokens[1];
+
+                MarkerOptions mo = new MarkerOptions();
+                LatLng ll = new LatLng(Double.parseDouble(x), Double.parseDouble(y));
+                mo.position(ll);
+                mo.title(name);
+
+                mMap.addMarker(mo);
+            }
+        }
+    }
+
     //顯示經位度的方式
     public String showLocation(Location location) {
         DecimalFormat formatter = new DecimalFormat("#.###");
@@ -467,14 +495,16 @@ public class MapsActivity extends FragmentActivity {
                                 JSONObject other = otherIds.getJSONObject(key);
                                 String id  = other.getString("id");
                                 String posx  = other.getString("posx");
-                                String posy  = other.getString("posx");
-                                players.put(id,"("+posx+","+posy+")");
-                                Log.d("DEBUG", id+","+posx+","+posy);
-
+                                String posy  = other.getString("posy");
+                                players.put(id,posx+","+posy);
+                                //Log.d("DEBUG", id+","+posx+","+posy);
                             } catch (JSONException e) {
                                 // Something went wrong!
                             }
                         }
+
+                        setPlayer();
+
                     } catch (JSONException e) {
                         return;
                     }
@@ -497,15 +527,17 @@ public class MapsActivity extends FragmentActivity {
 
                         String newId  = jo.getString("userId");
                         String posx  = jo.getString("posx");
-                        String posy  = jo.getString("posx");
+                        String posy  = jo.getString("posy");
 
-                        players.put(newId,"("+posx+","+posy+")");
-                        Log.d("DEBUG", newId+","+posx+","+posy);
+                        players.put(newId,posx+","+posy);
+                        //Log.d("DEBUG", newId+","+posx+","+posy);
 
                         for (Map.Entry<String, String> entry : players.entrySet())
                         {
                             Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
                         }
+
+                        setPlayer();
 
                     } catch (JSONException e) {
                         return;
@@ -520,15 +552,29 @@ public class MapsActivity extends FragmentActivity {
     public Emitter.Listener onDeleteUser = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            String deleteId  = args[0].toString();
-            Log.d("DEBUG","delete user:"+deleteId);
-            players.remove(deleteId);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        JSONObject jo = new JSONObject(args[0].toString());
+                        String deleteId  = jo.getString("userId");
 
-            for (Map.Entry<String, String> entry : players.entrySet())
-            {
-                Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
-            }
+                        Log.d("DEBUG","delete user:"+deleteId);
+                        players.remove(deleteId);
 
+                        for (Map.Entry<String, String> entry : players.entrySet())
+                        {
+                            Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
+                        }
+
+                        setPlayer();
+                    } catch (JSONException e) {
+                        Log.d("DEBUG",e.toString());
+                        return;
+                    }
+
+                }
+            });
         }
     };
 
