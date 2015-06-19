@@ -57,7 +57,7 @@ public class MapsActivity extends FragmentActivity {
     private LocationManager mgr;
     private String best;
 
-    int answer = -1;
+
     ImageButton Bag;
     Button Battle;
     Button Logout;
@@ -121,9 +121,6 @@ public class MapsActivity extends FragmentActivity {
         Bag = (ImageButton) findViewById(R.id.btnBag);
         Bag.setOnClickListener(btnBag);
 
-        //battle button
-        Battle = (Button) findViewById(R.id.btnBattle);
-
         //logout button
         Logout = (Button) findViewById(R.id.btnLogout);
         Logout.setOnClickListener(btnLogout);
@@ -182,8 +179,8 @@ public class MapsActivity extends FragmentActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        db.close();
-        mSocket.disconnect();
+        //db.close();
+        //mSocket.disconnect();
     }
 
     @Override
@@ -191,6 +188,7 @@ public class MapsActivity extends FragmentActivity {
         super.onDestroy();
         db.close();
         mgr.removeUpdates(mll);
+        //mSocket.disconnect();
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
@@ -305,7 +303,6 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
-    private Marker myMarker;
     private void setPlayer() {
         //將所有player以marker的方式標記在map上
 
@@ -493,7 +490,7 @@ public class MapsActivity extends FragmentActivity {
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://apppp.ngrok.io");
+            mSocket = IO.socket("http://140.113.66.20:5000");
         } catch (URISyntaxException e) {}
     }
 
@@ -652,6 +649,7 @@ public class MapsActivity extends FragmentActivity {
                                 attemptSend("acceptChallenge","{\"challengeId\":\""+challengeId+"\",\"userMonster\":\""+"Monster\"}");
 
                                 Intent intent = new Intent();
+                                intent.putExtra("challengeId", challengeId);
                                 intent.setClass(MapsActivity.this, Battle.class);
                                 startActivity(intent);
                             }
@@ -690,6 +688,7 @@ public class MapsActivity extends FragmentActivity {
 
                         //使用intent將資訊傳給battle activity
                         Intent intent = new Intent();
+                        intent.putExtra("challengeId", challengeId);
                         intent.setClass(MapsActivity.this, Battle.class);
                         startActivity(intent);
 

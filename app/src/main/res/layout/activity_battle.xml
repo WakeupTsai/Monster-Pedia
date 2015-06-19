@@ -27,11 +27,11 @@
         android:layout_height="wrap_content"
         android:src="@drawable/stone"
         android:background="@android:color/transparent"
-        android:layout_alignBottom="@+id/pp"
-        android:layout_toLeftOf="@+id/pp"
-        android:layout_toStartOf="@+id/pp" />
+        android:layout_alignBottom="@+id/paper"
+        android:layout_toLeftOf="@+id/paper"
+        android:layout_toStartOf="@+id/paper" />
     <ImageButton
-        android:id="@+id/pp"
+        android:id="@+id/paper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/pp"
