@@ -9,14 +9,11 @@ import java.util.ArrayList;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.location.Location;
 import android.location.LocationManager;
-import android.text.TextUtils;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ImageButton;
 import android.location.Criteria;
@@ -39,7 +36,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import java.text.DecimalFormat;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+import com.github.nkzawa.emitter.Emitter;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 //map的activity
@@ -50,6 +50,8 @@ public class MapsActivity extends FragmentActivity {
     private MyLocationListener mll;
     private LocationManager mgr;
     private String best;
+    private String myId;
+    private ArrayList<String> playersId = new ArrayList<String>();
 
     ImageButton Bag;
     Button Battle;
@@ -115,6 +117,9 @@ public class MapsActivity extends FragmentActivity {
         Battle = (Button) findViewById(R.id.btnBattle);
         Battle.setOnClickListener(btnBattle);
 
+        //get userid
+        mSocket.on("ackId", onNewMessage);
+
 
 
     }
@@ -156,6 +161,7 @@ public class MapsActivity extends FragmentActivity {
     protected void onStop() {
         super.onStop();
         db.close();
+        mSocket.disconnect();
     }
 
     //偵測到移動時的處理
@@ -167,6 +173,9 @@ public class MapsActivity extends FragmentActivity {
                 //顯示目前經緯度
                 Toast t = Toast.makeText(MapsActivity.this, showLocation(location), Toast.LENGTH_SHORT);
                 t.show();
+
+                //傳新座標給server
+                attemptSend("updatePosition","{"+"posx:"+location.getLatitude()+", posy:"+location.getLongitude()+"}");
 
                 //移動鏡頭
                 CameraPosition.Builder cpb =new CameraPosition.Builder();
@@ -404,5 +413,19 @@ public class MapsActivity extends FragmentActivity {
 
         mSocket.emit(key, value);
     }
+
+    //socker get
+    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //JSONObject data = (JSONObject) args[0];
+                    myId = (String)args[0];
+                }
+            });
+        }
+    };
 }
 
