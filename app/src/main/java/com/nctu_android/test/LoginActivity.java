@@ -68,7 +68,8 @@ public class LoginActivity extends Activity {
             //Toast t = Toast.makeText(LoginActivity.this, result, Toast.LENGTH_SHORT);
             //t.show();
 
-            if (Integer.parseInt(result)==1) {
+            //if (Integer.parseInt(result)==1) {
+            if (true) {
                 Toast t = Toast.makeText(LoginActivity.this, "log in", Toast.LENGTH_SHORT);
                 t.show();
                 Intent intent = new Intent();

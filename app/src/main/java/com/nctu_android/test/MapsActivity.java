@@ -35,6 +35,8 @@ import com.google.android.gms.maps.model.CameraPosition;
 
 
 import java.text.DecimalFormat;
+import java.util.Iterator;
+
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.emitter.Emitter;
@@ -52,7 +54,6 @@ public class MapsActivity extends FragmentActivity {
     private MyLocationListener mll;
     private LocationManager mgr;
     private String best;
-    private String userId;
 
     private ArrayList<String> playersId = new ArrayList<String>();
 
@@ -62,6 +63,7 @@ public class MapsActivity extends FragmentActivity {
     ArrayList<String> idlist;
     ArrayList<String> idlist2;
     String receiveData = "";
+    String userId;
 
     private boolean isIn;
     ArrayList<String> poslist = new ArrayList<String>();
@@ -122,10 +124,10 @@ public class MapsActivity extends FragmentActivity {
         Battle.setOnClickListener(btnBattle);
 
         //get userid
-        mSocket.on("ackId", onNewMessage);
+        mSocket.on("ackId", onNewMessage1);
 
         //if new user in
-        mSocket.on("newUser", onNewMessage);
+        mSocket.on("newUser", onNewMessage2);
 
     }
 
@@ -421,7 +423,7 @@ public class MapsActivity extends FragmentActivity {
     }
 
     //socker get
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+    private Emitter.Listener onNewMessage1 = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
@@ -429,15 +431,25 @@ public class MapsActivity extends FragmentActivity {
                 public void run() {
                     try {
                         JSONObject jo = new JSONObject(args[0].toString());
-                        JSONArray otherIds  = jo.getJSONArray("otherIds");
+                        Log.d("DEBUG","content : "+args[0].toString());
+
                         userId  = jo.getString("userId");
 
-                        for (int i = 0; i < otherIds.length(); i++) {
-                            JSONObject row = otherIds.getJSONObject(i);
-                            String id = row.getString("id");
-                            String posx = row.getString("posx");
-                            String posy = row.getString("posy");
-                            Log.d("DEBUG",id+","+posx+","+posy);
+                        JSONObject otherIds  = jo.getJSONObject("otherIds");
+
+                        Iterator<String> iter = otherIds.keys();
+                        while (iter.hasNext()) {
+                            String key = iter.next();
+                            try {
+                                JSONObject other = otherIds.getJSONObject(key);
+                                String id  = other.getString("id");
+                                String posx  = other.getString("posx");
+                                String posy  = other.getString("posx");
+                                Log.d("DEBUG", id+","+posx+","+posy);
+
+                            } catch (JSONException e) {
+                                // Something went wrong!
+                            }
                         }
 
 
@@ -450,7 +462,31 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
-    //
+    //socker get
+    private Emitter.Listener onNewMessage2 = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Log.d("DEBUG","new user");
+                        JSONObject jo = new JSONObject(args[0].toString());
+
+                        String newId  = jo.getString("userId");
+                        String posx  = jo.getString("posx");
+                        String posy  = jo.getString("posx");
+
+                        Log.d("DEBUG", newId+","+posx+","+posy);
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
 
 
 
