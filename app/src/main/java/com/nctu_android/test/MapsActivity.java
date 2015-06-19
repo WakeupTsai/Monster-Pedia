@@ -27,6 +27,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.CameraUpdate;
@@ -205,7 +206,7 @@ public class MapsActivity extends FragmentActivity {
                 LatLng now_location = new LatLng(location.getLatitude(),location.getLongitude());
                 cpb.target(now_location);
                 float zoom = mMap.getCameraPosition().zoom;
-                cpb.zoom(zoom);
+                cpb.zoom(17);
                 cpb.bearing(0);
                 CameraPosition cpnctu = cpb.build();
                 CameraUpdate initloc = CameraUpdateFactory. newCameraPosition(cpnctu);
@@ -298,8 +299,10 @@ public class MapsActivity extends FragmentActivity {
         }
     }
 
+    private Marker myMarker;
     private void setPlayer() {
         //將所有player以marker的方式標記在map上
+
         mMap.clear();
         setUpMap();
 
@@ -320,11 +323,63 @@ public class MapsActivity extends FragmentActivity {
                 LatLng ll = new LatLng(Double.parseDouble(x), Double.parseDouble(y));
                 mo.position(ll);
                 mo.title(name);
+                mo.snippet(name);
+                //mo.title("玩家");
 
                 mMap.addMarker(mo);
             }
+
+            mMap.setOnMarkerClickListener(gmapListener); // 設定偵聽
         }
     }
+
+
+
+    // 按下標記觸發 OnMarkerClick 事件
+    private GoogleMap.OnMarkerClickListener gmapListener = new GoogleMap.OnMarkerClickListener() {
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+
+            Log.d("DEBUG","marker:"+marker.getSnippet());
+
+            idlist2 = BagDB.getIDList(db);
+            ArrayList<String> namelist = new ArrayList<String>();
+            //找出其對應的名字
+            for( String id:idlist2) {
+                namelist.add(MonsterDB.getName(db,id));
+            }
+
+            final String name[] = new String[ namelist.size() ];
+            namelist.toArray(name);
+
+            //選擇出戰怪物
+            new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
+                    .setSingleChoiceItems(
+                            name, 0,
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Toast t = Toast.makeText(MapsActivity.this, "你選擇了"+name[which], Toast.LENGTH_SHORT);
+                                    t.show();
+
+                                    String MonsterId = MonsterDB.getId(db,name[which]);
+
+                                    attemptSend("requestChallenge","{\"userId\":\""+userId+"\",\"opponentId\":\""+123+"\",\"userMonster\":\""+MonsterId+"\"}");
+
+                                    dialog.dismiss();
+
+                                    //使用intent將資訊傳給battle activity
+                                    Intent intent = new Intent();
+                                    intent.setClass(MapsActivity.this, Battle.class);
+                                    startActivity(intent);
+
+                                }
+                            })
+                    .setNegativeButton("取消", null).show();
+
+
+            return true;
+        }
+    };
 
     //顯示經位度的方式
     public String showLocation(Location location) {
@@ -463,7 +518,7 @@ public class MapsActivity extends FragmentActivity {
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://apppp.ngrok.io");
+            mSocket = IO.socket("http://140.113.66.20:5000");
         } catch (URISyntaxException e) {}
     }
 

@@ -88,7 +88,7 @@ public class LoginActivity extends Activity {
     public String postData() {
         // Create a new HttpClient and Post Header
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost("http://apppp.ngrok.io/api/user/login");
+        HttpPost httppost = new HttpPost("http://140.113.66.20:5000/api/user/login");
 
 
 
