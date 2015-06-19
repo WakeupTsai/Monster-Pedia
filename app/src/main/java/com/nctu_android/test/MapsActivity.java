@@ -59,6 +59,7 @@ public class MapsActivity extends FragmentActivity {
 
     ImageButton Bag;
     Button Battle;
+    Button Logout;
     SQLiteDatabase db;
     ArrayList<String> idlist;
     ArrayList<String> idlist2;
@@ -123,6 +124,10 @@ public class MapsActivity extends FragmentActivity {
         Battle = (Button) findViewById(R.id.btnBattle);
         Battle.setOnClickListener(btnBattle);
 
+        //logout button
+        Logout = (Button) findViewById(R.id.btnLogout);
+        Logout.setOnClickListener(btnLogout);
+
         //get userid
         mSocket.on("ackId", onNewMessage1);
 
@@ -169,6 +174,14 @@ public class MapsActivity extends FragmentActivity {
         super.onStop();
         db.close();
         mSocket.disconnect();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
+        mgr.removeUpdates(mll);
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     //偵測到移動時的處理
@@ -364,6 +377,13 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
+    //當點選logout圖示時的處理
+    OnClickListener btnLogout = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            onDestroy();
+        }
+    };
 
     //捕捉與否的dialog
     public void dialog(final String MonsterId,String MonsterName){
@@ -487,7 +507,6 @@ public class MapsActivity extends FragmentActivity {
             });
         }
     };
-
 
 
 
