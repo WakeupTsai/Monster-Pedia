@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.location.Location;
 import android.location.LocationManager;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 import android.widget.ImageButton;
@@ -38,6 +39,7 @@ import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.emitter.Emitter;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,7 +52,8 @@ public class MapsActivity extends FragmentActivity {
     private MyLocationListener mll;
     private LocationManager mgr;
     private String best;
-    private String myId;
+    private String userId;
+
     private ArrayList<String> playersId = new ArrayList<String>();
 
     ImageButton Bag;
@@ -58,6 +61,7 @@ public class MapsActivity extends FragmentActivity {
     SQLiteDatabase db;
     ArrayList<String> idlist;
     ArrayList<String> idlist2;
+    String receiveData = "";
 
     private boolean isIn;
     ArrayList<String> poslist = new ArrayList<String>();
@@ -92,7 +96,7 @@ public class MapsActivity extends FragmentActivity {
 
             //socket connect
             mSocket.connect();
-            attemptSend("position","{"+"posx:"+location.getLatitude()+", posy:"+location.getLongitude()+"}");
+            attemptSend("position","{"+"\"posx\":"+location.getLatitude()+", \"posy\":"+location.getLongitude()+"}");
 
             // Move the center position
             CameraPosition.Builder cpb =new CameraPosition.Builder();
@@ -120,7 +124,8 @@ public class MapsActivity extends FragmentActivity {
         //get userid
         mSocket.on("ackId", onNewMessage);
 
-
+        //if new user in
+        mSocket.on("newUser", onNewMessage);
 
     }
 
@@ -175,7 +180,7 @@ public class MapsActivity extends FragmentActivity {
                 t.show();
 
                 //傳新座標給server
-                attemptSend("updatePosition","{"+"posx:"+location.getLatitude()+", posy:"+location.getLongitude()+"}");
+                attemptSend("updatePosition","{"+"\"posx\":"+location.getLatitude()+", \"posy\":"+location.getLongitude()+"}");
 
                 //移動鏡頭
                 CameraPosition.Builder cpb =new CameraPosition.Builder();
@@ -409,6 +414,7 @@ public class MapsActivity extends FragmentActivity {
         } catch (URISyntaxException e) {}
     }
 
+    //socket send
     private void attemptSend(String key, String value) {
 
         mSocket.emit(key, value);
@@ -421,11 +427,33 @@ public class MapsActivity extends FragmentActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    //JSONObject data = (JSONObject) args[0];
-                    myId = (String)args[0];
+                    try {
+                        JSONObject jo = new JSONObject(args[0].toString());
+                        JSONArray otherIds  = jo.getJSONArray("otherIds");
+                        userId  = jo.getString("userId");
+
+                        for (int i = 0; i < otherIds.length(); i++) {
+                            JSONObject row = otherIds.getJSONObject(i);
+                            String id = row.getString("id");
+                            String posx = row.getString("posx");
+                            String posy = row.getString("posy");
+                            Log.d("DEBUG",id+","+posx+","+posy);
+                        }
+
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
                 }
             });
         }
     };
+
+    //
+
+
+
+
 }
 
