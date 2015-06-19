@@ -57,7 +57,7 @@ public class MapsActivity extends FragmentActivity {
     private LocationManager mgr;
     private String best;
 
-
+    int answer = -1;
     ImageButton Bag;
     Button Battle;
     Button Logout;
@@ -123,7 +123,6 @@ public class MapsActivity extends FragmentActivity {
 
         //battle button
         Battle = (Button) findViewById(R.id.btnBattle);
-        Battle.setOnClickListener(btnBattle);
 
         //logout button
         Logout = (Button) findViewById(R.id.btnLogout);
@@ -137,6 +136,13 @@ public class MapsActivity extends FragmentActivity {
 
         //if user leave
         mSocket.on("deleteUser", onDeleteUser);
+
+        //someone challenge
+        mSocket.on("sendChallenge", onSendChallenge);
+
+
+
+
 
     }
 
@@ -323,6 +329,7 @@ public class MapsActivity extends FragmentActivity {
                 LatLng ll = new LatLng(Double.parseDouble(x), Double.parseDouble(y));
                 mo.position(ll);
                 mo.title(name);
+                Log.d("DEBUG","name:"+name);
                 mo.snippet(name);
                 //mo.title("玩家");
 
@@ -338,46 +345,52 @@ public class MapsActivity extends FragmentActivity {
     // 按下標記觸發 OnMarkerClick 事件
     private GoogleMap.OnMarkerClickListener gmapListener = new GoogleMap.OnMarkerClickListener() {
         @Override
-        public boolean onMarkerClick(Marker marker) {
+        public boolean onMarkerClick(final Marker marker) {
 
-            Log.d("DEBUG","marker:"+marker.getSnippet());
-
-            idlist2 = BagDB.getIDList(db);
-            ArrayList<String> namelist = new ArrayList<String>();
-            //找出其對應的名字
-            for( String id:idlist2) {
-                namelist.add(MonsterDB.getName(db,id));
+            if(marker.getSnippet()==null){
+                marker.showInfoWindow();
+                return true;
             }
+            else {
 
-            final String name[] = new String[ namelist.size() ];
-            namelist.toArray(name);
+                Log.d("DEBUG", "marker:" + marker.getSnippet());
 
-            //選擇出戰怪物
-            new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
-                    .setSingleChoiceItems(
-                            name, 0,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Toast t = Toast.makeText(MapsActivity.this, "你選擇了"+name[which], Toast.LENGTH_SHORT);
-                                    t.show();
+                idlist2 = BagDB.getIDList(db);
+                ArrayList<String> namelist = new ArrayList<String>();
+                //找出其對應的名字
+                for (String id : idlist2) {
+                    namelist.add(MonsterDB.getName(db, id));
+                }
 
-                                    String MonsterId = MonsterDB.getId(db,name[which]);
+                final String name[] = new String[namelist.size()];
+                namelist.toArray(name);
 
-                                    attemptSend("requestChallenge","{\"userId\":\""+userId+"\",\"opponentId\":\""+123+"\",\"userMonster\":\""+MonsterId+"\"}");
+                //選擇出戰怪物
+                new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
+                        .setSingleChoiceItems(
+                                name, 0,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Toast t = Toast.makeText(MapsActivity.this, "你選擇了" + name[which], Toast.LENGTH_SHORT);
+                                        t.show();
 
-                                    dialog.dismiss();
+                                        String MonsterId = MonsterDB.getId(db, name[which]);
 
-                                    //使用intent將資訊傳給battle activity
-                                    Intent intent = new Intent();
-                                    intent.setClass(MapsActivity.this, Battle.class);
-                                    startActivity(intent);
+                                        attemptSend("requestChallenge", "{\"userId\":\"" + userId + "\",\"opponentId\":\"" + marker.getSnippet() + "\",\"userMonster\":\"" + MonsterId + "\"}");
 
-                                }
-                            })
-                    .setNegativeButton("取消", null).show();
+                                        dialog.dismiss();
+
+                                        mSocket.on("rejectChallenge", onRejectChallenge);
+                                        mSocket.on("responseChallenge", onResponseChallenge);
 
 
-            return true;
+                                    }
+                                })
+                        .setNegativeButton("取消", null).show();
+
+
+                return true;
+            }
         }
     };
 
@@ -424,44 +437,6 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
-    //當點選battle圖示時的處理
-    OnClickListener btnBattle = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            idlist2 = BagDB.getIDList(db);
-            ArrayList<String> namelist = new ArrayList<String>();
-            //找出其對應的名字
-            for( String id:idlist2) {
-                namelist.add(MonsterDB.getName(db,id));
-            }
-
-            final String name[] = new String[ namelist.size() ];
-            namelist.toArray(name);
-
-            //選擇出戰怪物
-            new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
-                    .setSingleChoiceItems(
-                            name, 0,
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Toast t = Toast.makeText(MapsActivity.this, "你選擇了"+name[which], Toast.LENGTH_SHORT);
-                                    t.show();
-
-                                    dialog.dismiss();
-
-                                    //使用intent將資訊傳給battle activity
-                                    Intent intent = new Intent();
-                                    intent.setClass(MapsActivity.this, Battle.class);
-                                    startActivity(intent);
-
-                                }
-                            })
-                    .setNegativeButton("逃跑", null).show();
-
-
-        }
-    };
 
     //當點選logout圖示時的處理
     OnClickListener btnLogout = new OnClickListener() {
@@ -518,7 +493,7 @@ public class MapsActivity extends FragmentActivity {
     private Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://140.113.66.20:5000");
+            mSocket = IO.socket("http://apppp.ngrok.io");
         } catch (URISyntaxException e) {}
     }
 
@@ -633,6 +608,114 @@ public class MapsActivity extends FragmentActivity {
         }
     };
 
+    //socker get
+    public Emitter.Listener onSendChallenge = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        Log.d("DEBUG","Content:"+args[0].toString());
+
+                        JSONObject jo = new JSONObject(args[0].toString());
+
+                        final String challengeId  = jo.getString("challengeId");
+                        final String opponentId  = jo.getString("opponentId");
+                        final String oppontentMonster  = jo.getString("opponentMonster");
+
+
+                        AlertDialog.Builder dialog = new AlertDialog.Builder(MapsActivity.this);
+                        dialog.setTitle("玩家向你提出了挑戰");
+                        String MonsterName = MonsterDB.getName(db,oppontentMonster);
+                        dialog.setMessage("他派出了"+MonsterName+"!!");
+
+                        //如果點選放棄時的操作
+                        dialog.setPositiveButton("拒絕", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                Toast t = Toast.makeText(MapsActivity.this, "拒絕了對戰", Toast.LENGTH_SHORT);
+                                t.show();
+                                attemptSend("rejectChallenge","{\"challengeId\":\""+challengeId+"\"}");
+                            }
+                        });
+
+                        //如果點選捕捉時的操作
+                        dialog.setNegativeButton("接受", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                Toast t = Toast.makeText(MapsActivity.this, "接受挑戰", Toast.LENGTH_SHORT);
+                                t.show();
+                                attemptSend("acceptChallenge","{\"challengeId\":\""+challengeId+"\",\"userMonster\":\""+"Monster\"}");
+
+                                Intent intent = new Intent();
+                                intent.setClass(MapsActivity.this, Battle.class);
+                                startActivity(intent);
+                            }
+                        });
+
+                        setVibrate(1000);
+                        dialog.setCancelable(false);
+                        dialog.show();
+
+
+
+                    } catch (JSONException e) {
+                        Log.d("DEBUG",e.toString());
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+    //socker get
+    public Emitter.Listener onResponseChallenge = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Log.d("DEBUG","Content:"+args[0].toString());
+
+                        JSONObject jo = new JSONObject(args[0].toString());
+
+                        final String challengeId  = jo.getString("challengeId");
+                        final String oppontentMonster  = jo.getString("opponentMonster");
+
+                        //使用intent將資訊傳給battle activity
+                        Intent intent = new Intent();
+                        intent.setClass(MapsActivity.this, Battle.class);
+                        startActivity(intent);
+
+                    } catch (JSONException e) {
+                        Log.d("DEBUG",e.toString());
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+    //socker get
+    public Emitter.Listener onRejectChallenge = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast t = Toast.makeText(MapsActivity.this, "對手拒絕了你的挑戰", Toast.LENGTH_SHORT);
+                    t.show();
+                }
+            });
+        }
+    };
 
 }
 
