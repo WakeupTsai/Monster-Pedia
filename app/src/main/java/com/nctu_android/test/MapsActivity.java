@@ -88,6 +88,10 @@ public class MapsActivity extends FragmentActivity {
             t.show();
             LatLng now_location = new LatLng(location.getLatitude(),location.getLongitude());
 
+            //socket connect
+            mSocket.connect();
+            attemptSend("position","{"+"posx:"+location.getLatitude()+", posy:"+location.getLongitude()+"}");
+
             // Move the center position
             CameraPosition.Builder cpb =new CameraPosition.Builder();
             cpb.target(now_location);
@@ -310,10 +314,6 @@ public class MapsActivity extends FragmentActivity {
         @Override
         public void onClick(View v) {
 
-            //socket connect
-            mSocket.connect();
-            attemptSend();
-
             idlist2 = BagDB.getIDList(db);
             ArrayList<String> namelist = new ArrayList<String>();
             //找出其對應的名字
@@ -400,10 +400,9 @@ public class MapsActivity extends FragmentActivity {
         } catch (URISyntaxException e) {}
     }
 
-    private void attemptSend() {
-        String message = "testtttttttttt";
+    private void attemptSend(String key, String value) {
 
-        mSocket.emit("new message", message);
+        mSocket.emit(key, value);
     }
 }
 
