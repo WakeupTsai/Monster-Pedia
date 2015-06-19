@@ -30,7 +30,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         cv1.put("Pet_id", "a001");
         db.insert(BAGTABLE, null, cv1);
 
-        cv1.put("Pet_id", "a00４");
+        cv1.put("Pet_id", "a004");
         db.insert(BAGTABLE, null, cv1);
 
         cv1.put("Pet_id", "a007");
