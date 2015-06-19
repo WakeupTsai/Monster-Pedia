@@ -8,8 +8,10 @@
 
     <TextView
         android:text="Let's battle!"
+        android:textSize="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:id="@+id/textView" />
 
     <ImageButton
@@ -18,26 +20,76 @@
         android:layout_height="wrap_content"
         android:src="@drawable/scissor"
         android:background="@android:color/transparent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" />
     <ImageButton
         android:id="@+id/stone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/stone"
         android:background="@android:color/transparent"
-        android:layout_alignBottom="@+id/paper"
-        android:layout_toLeftOf="@+id/paper"
-        android:layout_toStartOf="@+id/paper" />
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        />
     <ImageButton
         android:id="@+id/paper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/pp"
         android:background="@android:color/transparent"
-        android:layout_alignTop="@+id/scissor"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        />
+
+    <TextView
+        android:text="v.s."
+        android:textSize="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="92dp" />
+
+    <TextView
+        android:text="己方"
+        android:textSize="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:layout_below="@+id/textView"
+        android:layout_alignParentLeft="true"
+         />
+
+    <TextView
+        android:text="敵方"
+        android:textSize="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5"
+        android:layout_below="@+id/textView"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        />
+
+
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton1"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_toRightOf="@+id/textView3"
+        android:layout_toEndOf="@+id/textView3"
+        android:background="@android:color/transparent"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton2"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_toLeftOf="@+id/textView3"
+        android:layout_toStartOf="@+id/textView3"
+        android:background="@android:color/transparent"/>
+
 
 </RelativeLayout>

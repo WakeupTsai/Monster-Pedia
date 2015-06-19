@@ -59,7 +59,6 @@ public class MapsActivity extends FragmentActivity {
 
 
     ImageButton Bag;
-    Button Battle;
     Button Logout;
     SQLiteDatabase db;
     ArrayList<String> idlist;
@@ -130,6 +129,9 @@ public class MapsActivity extends FragmentActivity {
 
         //if new user in
         mSocket.on("newUser", onNewUser);
+
+        //if new user move
+        mSocket.on("updatePosition", onUpdatePosition);
 
         //if user leave
         mSocket.on("deleteUser", onDeleteUser);
@@ -576,6 +578,39 @@ public class MapsActivity extends FragmentActivity {
     };
 
     //socker get
+    public Emitter.Listener onUpdatePosition = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Log.d("DEBUG","location change");
+                        JSONObject jo = new JSONObject(args[0].toString());
+
+                        String userId  = jo.getString("userId");
+                        String posx  = jo.getString("posx");
+                        String posy  = jo.getString("posy");
+
+                        players.put(userId, posx+","+posy);
+
+                        for (Map.Entry<String, String> entry : players.entrySet())
+                        {
+                            Log.d("DEBUG",entry.getKey() + "/" + entry.getValue());
+                        }
+
+                        setPlayer();
+
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                }
+            });
+        }
+    };
+
+    //socker get
     public Emitter.Listener onDeleteUser = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -646,12 +681,41 @@ public class MapsActivity extends FragmentActivity {
                                 dialog.dismiss();
                                 Toast t = Toast.makeText(MapsActivity.this, "接受挑戰", Toast.LENGTH_SHORT);
                                 t.show();
-                                attemptSend("acceptChallenge","{\"challengeId\":\""+challengeId+"\",\"userMonster\":\""+"Monster\"}");
 
-                                Intent intent = new Intent();
-                                intent.putExtra("challengeId", challengeId);
-                                intent.setClass(MapsActivity.this, Battle.class);
-                                startActivity(intent);
+                                idlist2 = BagDB.getIDList(db);
+                                ArrayList<String> namelist = new ArrayList<String>();
+                                //找出其對應的名字
+                                for (String id : idlist2) {
+                                    namelist.add(MonsterDB.getName(db, id));
+                                }
+
+                                final String name[] = new String[namelist.size()];
+                                namelist.toArray(name);
+
+                                //選擇出戰怪物
+                                new AlertDialog.Builder(MapsActivity.this).setTitle("出戰怪物")
+                                        .setSingleChoiceItems(
+                                                name, 0,
+                                                new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        Toast t = Toast.makeText(MapsActivity.this, "你選擇了" + name[which], Toast.LENGTH_SHORT);
+                                                        t.show();
+
+                                                        attemptSend("acceptChallenge","{\"challengeId\":\""+challengeId+"\",\"userMonster\":\""+name[which]+"\"}");
+
+                                                        String MonsterId = MonsterDB.getId(db, name[which]);
+
+                                                        Intent intent = new Intent();
+                                                        intent.putExtra("challengeId", challengeId);
+                                                        intent.setClass(MapsActivity.this, Battle.class);
+                                                        startActivity(intent);
+
+
+                                                    }
+                                                })
+                                        .setNegativeButton("取消", null).show();
+
+
                             }
                         });
 
@@ -685,6 +749,9 @@ public class MapsActivity extends FragmentActivity {
 
                         final String challengeId  = jo.getString("challengeId");
                         final String oppontentMonster  = jo.getString("opponentMonster");
+
+                        Toast t = Toast.makeText(MapsActivity.this, "對手派出了"+oppontentMonster, Toast.LENGTH_SHORT);
+                        t.show();
 
                         //使用intent將資訊傳給battle activity
                         Intent intent = new Intent();

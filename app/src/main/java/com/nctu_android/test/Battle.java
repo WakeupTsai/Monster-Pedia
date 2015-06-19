@@ -1,12 +1,15 @@
 package com.nctu_android.test;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.github.nkzawa.socketio.client.IO;
@@ -22,6 +25,7 @@ import java.net.URISyntaxException;
 public class Battle extends ActionBarActivity {
 
     String challengeId;
+    private ImageButton Image1,Image2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +43,20 @@ public class Battle extends ActionBarActivity {
 
         Intent intent = getIntent();
         challengeId = intent.getStringExtra("challengeId");
-        Log.d("DEBUG",challengeId);
+
+
+
+        try {
+            Image1 = (ImageButton) findViewById(R.id.imageButton1);
+            Bitmap icon1 = BitmapFactory.decodeResource(getResources(),R.drawable.a001);
+            Image1.setImageBitmap(icon1);
+
+            Image2 = (ImageButton) findViewById(R.id.imageButton2);
+            Bitmap icon2 = BitmapFactory.decodeResource(getResources(),R.drawable.a002);
+            Image2.setImageBitmap(icon2);
+        }catch (Exception e) {
+        }
+
     }
 
     //socket
