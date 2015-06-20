@@ -227,8 +227,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
         cv.put("Monster_id", "a032");
         cv.put("name", "超夢");
-        cv.put("x", 24.785987);//24 78630424.786367, 120.998589
-        cv.put("y", 120.997409);//120.997858 120,997820
+        cv.put("x", 24.7839);//24 78630424.786367, 120.998589
+        cv.put("y", 120.998);//120.997858 120,997820
         db.insert(POSITIONTABLE, null, cv);
 
         cv.put("Monster_id", "a033");

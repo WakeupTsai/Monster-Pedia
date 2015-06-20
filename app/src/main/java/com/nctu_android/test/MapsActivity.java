@@ -730,8 +730,7 @@ public class MapsActivity extends FragmentActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
-                                Toast t = Toast.makeText(MapsActivity.this, "接受挑戰", Toast.LENGTH_SHORT);
-                                t.show();
+
 
                                 idlist2 = BagDB.getIDList(db);
                                 ArrayList<String> namelist = new ArrayList<String>();
@@ -768,7 +767,14 @@ public class MapsActivity extends FragmentActivity {
 
 
                                                     }
-                                                }).show();
+                                                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            attemptSend("rejectChallenge","{\"challengeId\":\""+challengeId+"\"}");
+                                                            Toast t = Toast.makeText(MapsActivity.this, "拒絕了對戰", Toast.LENGTH_SHORT);
+                                                            t.show();
+                                                        }
+                                                    }).show();
 
 
                             }
