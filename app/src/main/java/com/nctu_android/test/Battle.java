@@ -3,6 +3,9 @@ package com.nctu_android.test;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +18,7 @@ import android.widget.Toast;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 import com.github.nkzawa.emitter.Emitter;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +29,9 @@ import java.net.URISyntaxException;
 public class Battle extends ActionBarActivity {
 
     String challengeId;
-    private ImageButton Image1,Image2;
+    private ImageView Image1,Image2;
+    private int battle = 0;
+    private boolean done = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +49,28 @@ public class Battle extends ActionBarActivity {
 
         Intent intent = getIntent();
         challengeId = intent.getStringExtra("challengeId");
-
+        String A = intent.getStringExtra("A");
+        A = A.substring(1);
+        Log.d("Battle","A="+A);
+        String B = intent.getStringExtra("B");
+        B = B.substring(1);
+        Log.d("Battle","B="+B);
 
 
         try {
-            Image1 = (ImageButton) findViewById(R.id.imageButton1);
-            Bitmap icon1 = BitmapFactory.decodeResource(getResources(),R.drawable.a001);
-            Image1.setImageBitmap(icon1);
 
-            Image2 = (ImageButton) findViewById(R.id.imageButton2);
-            Bitmap icon2 = BitmapFactory.decodeResource(getResources(),R.drawable.a002);
-            Image2.setImageBitmap(icon2);
+            String uri = "@drawable/b"+A;
+            int imageResource = getResources().getIdentifier(uri, null, getPackageName());
+            Image1= (ImageView)findViewById(R.id.imageA);
+            Drawable res = getResources().getDrawable(imageResource);
+            Image1.setImageDrawable(res);
+
+            uri = "@drawable/b"+B;
+            imageResource = getResources().getIdentifier(uri, null, getPackageName());
+            Image2= (ImageView)findViewById(R.id.imageB);
+            res = getResources().getDrawable(imageResource);
+            Image2.setImageDrawable(res);
+
         }catch (Exception e) {
         }
 
@@ -78,7 +95,7 @@ public class Battle extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             attemptSend("sendBattle","{\"challengeId\":\""+challengeId+"\","+"\"skill\":"+"\""+0+"\"}");
-            Log.d("DEBUG", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + 0 + "\"}");
+            Log.d("Battle", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + "paper" + "\"}");
 
             //someone challenge
             mSocket.on("resultBattle", onResultBattle);
@@ -92,7 +109,7 @@ public class Battle extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             attemptSend("sendBattle", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + 1 + "\"}");
-            Log.d("DEBUG", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + 1 + "\"}");
+            Log.d("Battle", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + "scissor" + "\"}");
 
             //someone challenge
             mSocket.on("resultBattle", onResultBattle);
@@ -105,7 +122,7 @@ public class Battle extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             attemptSend("sendBattle", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + 2 + "\"}");
-            Log.d("DEBUG", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + 2 + "\"}");
+            Log.d("Battle", "{\"challengeId\":\"" + challengeId + "\"," + "\"skill\":" + "\"" + "stone" + "\"}");
 
             //someone challenge
             mSocket.on("resultBattle", onResultBattle);
@@ -115,32 +132,41 @@ public class Battle extends ActionBarActivity {
 
     //socker get
     public Emitter.Listener onResultBattle = new Emitter.Listener() {
+        private String result;
+
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+                        battle = battle + 1 ;
                         JSONObject jo = new JSONObject(args[0].toString());
-                        final String result  = jo.getString("result");
-
-                        Log.d("DEBUG",result);
+                        result  = jo.getString("result");
 
                         Toast t = Toast.makeText(Battle.this, result, Toast.LENGTH_SHORT);
                         t.show();
 
-                        Intent intent = new Intent();
-                        intent.setClass(Battle.this, MapsActivity.class);
-                        startActivity(intent);
+                        //if(battle==3) {
+                        //    done = true;
+                        //}
+
+                        Log.d("Battle",result);
 
                     } catch (JSONException e) {
-                        Log.d("DEBUG",e.toString());
+                        Log.d("Battle",e.toString());
                         return;
                     }
 
                 }
             });
+
+            //Log.d("Battle","battle="+battle);
+            //if(done) {
+                finish();
+            //}
         }
     };
+
 
 }
