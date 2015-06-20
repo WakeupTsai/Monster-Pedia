@@ -59,6 +59,7 @@ public class MapsActivity extends FragmentActivity {
     private String MonsterId;
 
 
+
     ImageButton Bag;
     Button Logout;
     SQLiteDatabase db;
@@ -66,6 +67,7 @@ public class MapsActivity extends FragmentActivity {
     ArrayList<String> idlist2;
     String userId;
     Map<String, String> players = new HashMap<String, String>();
+    String battleresult;
 
     private boolean isIn;
     ArrayList<String> poslist = new ArrayList<String>();
@@ -94,8 +96,8 @@ public class MapsActivity extends FragmentActivity {
         }
         if (location != null) {
             //跳出toast顯示目前經緯度
-            Toast t = Toast.makeText(MapsActivity.this, showLocation(location), Toast.LENGTH_LONG);
-            t.show();
+            //Toast t = Toast.makeText(MapsActivity.this, showLocation(location), Toast.LENGTH_LONG);
+            //t.show();
             LatLng now_location = new LatLng(location.getLatitude(),location.getLongitude());
 
             //socket connect
@@ -170,6 +172,48 @@ public class MapsActivity extends FragmentActivity {
         } else {
             mgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, mll);
         }
+
+        //
+        Intent intent = getIntent();
+        battleresult = intent.getStringExtra("battleresult");
+
+        if(battleresult!=null) {
+            String A = intent.getStringExtra("A");
+            String B = intent.getStringExtra("B");
+            Log.d("Battle","mapA="+A);
+            Log.d("Battle","mapB="+B);
+
+            String message="";
+            if(battleresult.equals("win")) {
+
+                idlist2 = BagDB.getIDList(db);
+                if(!idlist2.contains(B)){
+                    String name = MonsterDB.getName(db,B);
+                    message = "恭喜你贏得對手的\""+name+"\"!";
+                    BagDB.addMonster(db,B);
+                }
+                else{
+                    message = "恭喜你贏得勝利!";
+                }
+
+
+
+
+            }
+            else if(battleresult.equals("lost")) {
+                String name = MonsterDB.getName(db,A);
+                message = "你的\""+name+"\"投奔對手了QQ";
+                BagDB.deleteMonster(db,A);
+            }
+            else {
+                message = "平分秋色!";
+            }
+
+            final AlertDialog result = battleResult(battleresult,message);
+            result.show();
+            Log.d("DEBUG", battleresult);
+            battleresult=null;
+        }
     }
 
     @Override
@@ -202,22 +246,22 @@ public class MapsActivity extends FragmentActivity {
 
             if (location != null) {
                 //顯示目前經緯度
-                Toast t = Toast.makeText(MapsActivity.this, showLocation(location), Toast.LENGTH_SHORT);
-                t.show();
+                //Toast t = Toast.makeText(MapsActivity.this, showLocation(location), Toast.LENGTH_SHORT);
+                //t.show();
 
                 //傳新座標給server
                 attemptSend("updatePosition","{"+"\"posx\":"+location.getLatitude()+", \"posy\":"+location.getLongitude()+"}");
 
                 //移動鏡頭
-                CameraPosition.Builder cpb =new CameraPosition.Builder();
-                LatLng now_location = new LatLng(location.getLatitude(),location.getLongitude());
-                cpb.target(now_location);
-                float zoom = mMap.getCameraPosition().zoom;
-                cpb.zoom(17);
-                cpb.bearing(0);
-                CameraPosition cpnctu = cpb.build();
-                CameraUpdate initloc = CameraUpdateFactory. newCameraPosition(cpnctu);
-                mMap.animateCamera(initloc);
+//                CameraPosition.Builder cpb =new CameraPosition.Builder();
+//                LatLng now_location = new LatLng(location.getLatitude(),location.getLongitude());
+//                cpb.target(now_location);
+//                float zoom = mMap.getCameraPosition().zoom;
+//                cpb.zoom(17);
+//                cpb.bearing(0);
+//                CameraPosition cpnctu = cpb.build();
+//                CameraUpdate initloc = CameraUpdateFactory. newCameraPosition(cpnctu);
+//                mMap.animateCamera(initloc);
 
                 //***********判斷附近是否有monster可以捕捉***********//
                 boolean allnotin = true;
@@ -237,7 +281,13 @@ public class MapsActivity extends FragmentActivity {
                     if (dist < 10.0) {
                         if (isIn == false) {
                             //如果有monser可以捕捉則跳出dialog
-                            dialog(id,name);
+
+                            idlist2 = BagDB.getIDList(db);
+
+                            if(!idlist2.contains(id))
+                                dialog(id,name);
+
+
                             isIn = true;
                             break;
                         }
@@ -704,7 +754,7 @@ public class MapsActivity extends FragmentActivity {
                                                         Toast t = Toast.makeText(MapsActivity.this, "你派出了" + name[which], Toast.LENGTH_SHORT);
                                                         t.show();
 
-                                                        attemptSend("acceptChallenge","{\"challengeId\":\""+challengeId+"\",\"userMonster\":\""+name[which]+"\"}");
+                                                        attemptSend("acceptChallenge", "{\"challengeId\":\"" + challengeId + "\",\"userMonster\":\"" + name[which] + "\"}");
 
                                                         String MonsterId = MonsterDB.getId(db, name[which]);
                                                         String opponentMon = MonsterDB.getId(db, MonsterName);
@@ -807,6 +857,52 @@ public class MapsActivity extends FragmentActivity {
             });
         }
     };
+
+    private AlertDialog battleResult(String title,String message){
+        //產生一個Builder物件
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+        //設定Dialog的標題
+        builder.setTitle(title);
+        //設定Dialog的內容
+        builder.setMessage(message);
+        //設定Positive按鈕資料
+        builder.setPositiveButton("好", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        //設定Negative按鈕資料
+        builder.setNegativeButton("查看背包", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //取得使用者擁有的monster的id
+                idlist2 = BagDB.getIDList(db);
+                int [] imageIds = null;
+                int columns = 5;
+                int n = idlist2.size();
+                int i = 0;
+                imageIds = new int[n];
+
+                //找出其對應的圖片
+                for( String id:idlist2) {
+                    String uri="@drawable/" + id;
+                    int source = getResources().getIdentifier(uri, null, getPackageName());
+                    imageIds[i] = source;
+                    i = i+1;
+                }
+
+                //使用intent將資訊傳給bag activity
+                Intent intent = new Intent();
+                intent.setClass(MapsActivity.this, BagActivity.class);
+                intent.putExtra("KEY_IDS", imageIds);
+                intent.putExtra("KEY_COLUMNS", columns);
+                startActivity(intent);
+            }
+        });
+        //利用Builder物件建立AlertDialog
+        return builder.create();
+    }
+
 
 }
 
