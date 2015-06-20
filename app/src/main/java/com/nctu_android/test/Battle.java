@@ -146,10 +146,9 @@ public class Battle extends ActionBarActivity {
 
                         Toast t = Toast.makeText(Battle.this, result, Toast.LENGTH_SHORT);
                         t.show();
-
-
-
                         Log.d("Battle",result);
+
+                        finish();
 
                     } catch (JSONException e) {
                         Log.d("Battle",e.toString());
@@ -159,9 +158,7 @@ public class Battle extends ActionBarActivity {
                 }
             });
 
-            Intent intent = new Intent();
-            intent.setClass(Battle.this, MapsActivity.class);
-            startActivity(intent);
+
         }
     };
 
