@@ -64,6 +64,12 @@ public class BagActivity extends Activity {
     private View.OnClickListener back = new OnClickListener() {
         @Override
         public void onClick(View v) {
+
+            Intent intent = new Intent();
+            intent.setClass(BagActivity.this, MapsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
             finish();
         }
     };

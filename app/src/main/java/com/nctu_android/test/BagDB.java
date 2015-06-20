@@ -3,6 +3,7 @@ package com.nctu_android.test;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -31,5 +32,14 @@ public class BagDB {
         ContentValues cv1 = new ContentValues();
         cv1.put("Pet_id", MonsterId);
         db.insert(BAGTABLE, null, cv1);
+    }
+
+    //將使用者新抓到的BAGTABLE從table中刪除
+    static void deleteMonster(SQLiteDatabase db, String MonsterId) {
+
+        ContentValues cv1 = new ContentValues();
+        cv1.put("Pet_id", MonsterId);
+        Log.d("Battle","BAG:"+MonsterId);
+        db.delete(BAGTABLE, "Pet_id="+MonsterId,null);
     }
 }

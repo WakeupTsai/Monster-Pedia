@@ -31,7 +31,8 @@ public class Battle extends ActionBarActivity {
     String challengeId;
     private ImageView Image1,Image2;
     private int battle = 0;
-    private boolean done = false;
+    String AA;
+    String BB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +50,13 @@ public class Battle extends ActionBarActivity {
 
         Intent intent = getIntent();
         challengeId = intent.getStringExtra("challengeId");
-        String A = intent.getStringExtra("A");
-        A = A.substring(1);
-        Log.d("Battle","A="+A);
-        String B = intent.getStringExtra("B");
-        B = B.substring(1);
-        Log.d("Battle","B="+B);
+
+        AA = intent.getStringExtra("A");
+        String A = AA.substring(1);
+
+        BB = intent.getStringExtra("B");
+        String B = BB.substring(1);
+
 
 
         try {
@@ -146,9 +148,23 @@ public class Battle extends ActionBarActivity {
 
                         Toast t = Toast.makeText(Battle.this, result, Toast.LENGTH_SHORT);
                         t.show();
+
                         Log.d("Battle",result);
 
-                        finish();
+                        Log.d("Battle","AA="+AA);
+                        Log.d("Battle","BB="+BB);
+
+                        Intent intent = new Intent();
+                        intent.setClass(Battle.this, MapsActivity.class);
+                        intent.putExtra("battleresult",result);
+
+                        intent.putExtra("A",AA);
+                        intent.putExtra("B",BB);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                        startActivity(intent);
+
+                        onDestroy();
 
                     } catch (JSONException e) {
                         Log.d("Battle",e.toString());
@@ -160,7 +176,15 @@ public class Battle extends ActionBarActivity {
 
 
         }
+
     };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //mSocket.disconnect();
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
 
 
 }
