@@ -40,6 +40,6 @@ public class BagDB {
         ContentValues cv1 = new ContentValues();
         cv1.put("Pet_id", MonsterId);
         Log.d("Battle","BAG:"+MonsterId);
-        db.delete(BAGTABLE, "Pet_id="+MonsterId,null);
+        db.delete(BAGTABLE, "Pet_id='"+MonsterId+"'",null);
     }
 }
