@@ -147,9 +147,7 @@ public class Battle extends ActionBarActivity {
                         Toast t = Toast.makeText(Battle.this, result, Toast.LENGTH_SHORT);
                         t.show();
 
-                        //if(battle==3) {
-                        //    done = true;
-                        //}
+
 
                         Log.d("Battle",result);
 
@@ -161,10 +159,9 @@ public class Battle extends ActionBarActivity {
                 }
             });
 
-            //Log.d("Battle","battle="+battle);
-            //if(done) {
-                finish();
-            //}
+            Intent intent = new Intent();
+            intent.setClass(Battle.this, MapsActivity.class);
+            startActivity(intent);
         }
     };
 

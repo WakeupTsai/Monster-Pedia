@@ -772,16 +772,25 @@ public class MapsActivity extends FragmentActivity {
 
                     opponentMon = MonsterDB.getId(db,oppontentMonster);
 
+                    Log.d("Battle","fuck1:"+oppontentMonster);
+                    Log.d("Battle","fuck1:"+opponentMon);
+
+                    //使用intent將資訊傳給battle activity
+                    Intent intent = new Intent();
+                    intent.putExtra("challengeId", challengeId);
+                    intent.putExtra("A", MonsterId);
+
+                    Log.d("Battle","fuck2:"+oppontentMonster);
+                    Log.d("Battle","fuck2:"+opponentMon);
+
+                    intent.putExtra("B", opponentMon);
+                    intent.setClass(MapsActivity.this, Battle.class);
+                    startActivity(intent);
+
                 }
             });
 
-            //使用intent將資訊傳給battle activity
-            Intent intent = new Intent();
-            intent.putExtra("challengeId", challengeId);
-            intent.putExtra("A", MonsterId);
-            intent.putExtra("B", opponentMon);
-            intent.setClass(MapsActivity.this, Battle.class);
-            startActivity(intent);
+
         }
     };
 
